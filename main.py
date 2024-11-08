@@ -45,7 +45,7 @@ async def help(ctx):
 @bot.slash_command(name="support", description="サポートサーバーのリンクを表示します")
 async def support(ctx):
     embed = discord.Embed(title="サポートサーバー", description="こちらからサポートサーバーに参加できます。", color=0x00ff00)
-    embed.add_field(name="リンク", value="https://discord.gg/yourserverlink")  # サポートサーバのリンクを設定
+    embed.add_field(name="リンク", value="https://discord.gg/r594PHeNNp")  # サポートサーバのリンクを設定
     await ctx.respond(embed=embed)
 
 # Botを実行
