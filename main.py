@@ -61,7 +61,7 @@ async def support(ctx):
     embed = interactions.Embed(
         title="サポートサーバー",
         description="こちらからサポートサーバーに参加できます。",
-        color=0x00ff00,
+        color=0xff0000,
     )
     embed.add_field(name="リンク", value="https://discord.gg/r594PHeNNp")  # サポートサーバのリンクを設定
     await ctx.send(embeds=[embed])
