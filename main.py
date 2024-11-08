@@ -3,15 +3,15 @@
 import discord
 from discord.ext import commands
 import os
-from gemini_chat import generate_reply  # gemini_chat.pyの関数をインポート
+from gemini_chat import generate_reply
 from keep_alive import keep_alive
 
 # Intents設定
 intents = discord.Intents.default()
 intents.message_content = True
 
-# Botの初期設定
-bot = commands.Bot(command_prefix="/", intents=intents)
+# Botの初期設定（`discord.Bot`を使用）
+bot = discord.Bot(intents=intents)
 
 # Bot起動時の処理
 @bot.event
