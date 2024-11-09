@@ -14,7 +14,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)  # command_prefixを追�
 # プリセンス(ステータス)表示
 @tasks.loop(seconds=20)
 async def presence_loop():
-    game = discord.Game("/chatをプレイ中")  # ステータス表示内容を指定
+    game = discord.Game("/chat")  # ステータス表示内容を指定
     await bot.change_presence(activity=game)
 
 # Bot起動時の処理
