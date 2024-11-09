@@ -1,83 +1,61 @@
-import asyncio
 import os
-import discord
-from discord.ext import commands, tasks
-from discord import app_commands
+import discord  # discord.pyを使用します
 from gemini_chat import generate_reply
 from keep_alive import keep_alive
 
-# Botの初期設定
-intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents)
-
-# プリセンス(ステータス)表示
-@tasks.loop(seconds=20)
-async def presence_loop():
-    game = discord.Game("/chat")
-    await bot.change_presence(activity=game)
+# Botの設定
+intents = discord.Intents.all()
+client = discord.Client(intents=intents)
 
 # Bot起動時の処理
-@bot.event
+@client.event
 async def on_ready():
-    presence_loop.start()
-    await bot.tree.sync()  # コマンドを同期して登録
-    print(f"Logged in as {bot.user.name}")
+    print("Botは正常に起動しました！")
+    print(client.user.name)  # Botの名前
+    print(client.user.id)  # BotのID
+    print(discord.__version__)  # discord.pyのバージョン
+    print('------')
+   
+    await client.change_presence(activity=discord.Game(name="/help"))
 
-# 会話機能
-@bot.tree.command(
-    name="chat",
-    description="Google Gemini APIを使って会話します",
-)
-@app_commands.describe(message="送信したいメッセージ")
-async def chat(interaction: discord.Interaction, message: str):
-    await interaction.response.defer()  # 応答を一旦保留にして、タイムアウト回避
-    try:
-        reply = await asyncio.to_thread(
-            generate_reply, message
+# チャット機能
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    # /chat コマンド
+    if message.content.startswith("/chat"):
+        try:
+            user_message = message.content[len("/chat "):].strip()
+            reply = generate_reply(user_message)  # Gemini APIからの応答を取得
+            await message.channel.send(reply)
+        except Exception as e:
+            await message.channel.send("エラーが発生しました: " + str(e))
+
+    # /chat_clear コマンド
+    elif message.content == "/chat_clear":
+        await message.channel.send("会話履歴をクリアしました。")
+
+    # /help コマンド
+    elif message.content == "/help":
+        help_text = "/chat [メッセージ] - Google Geminiとの会話\n" \
+                    "/chat_clear - 会話履歴をクリア\n" \
+                    "/support - サポートサーバーへのリンクを表示"
+        await message.channel.send(help_text)
+
+    # /support コマンド
+    elif message.content == "/support":
+        embed = discord.Embed(
+            title="サポートサーバー",
+            description="こちらからサポートサーバーに参加できます。",
+            color=0x00ff00
         )
-        await interaction.followup.send(reply)
-    except Exception as e:
-        await interaction.followup.send(f"エラーが発生しました: {str(e)}")
+        embed.add_field(name="リンク", value="https://discord.gg/r594PHeNNp")  # サポートサーバのリンクを設定
+        await message.channel.send(embed=embed)
 
-# 履歴クリア機能
-@bot.command(
-    name="chat_clear",
-    description="会話履歴をクリアします",
-)
-async def chat_clear(interaction: discord.Interaction):
-    await interaction.response.send_message("会話履歴をクリアしました。")
-
-# ヘルプ機能
-@bot.command(
-    name="bot_help",
-    description="使い方を表示します",
-)
-async def bot_help(interaction: discord.Interaction):
-    embed = (
-        discord.Embed(title="ボットの使い方", colour=discord.Colour.blurple())
-        .add_field(name="/chat", value="Google Geminiと会話することができます")
-        .add_field(name="/chat_clear", value="会話履歴をクリアします")
-        .add_field(
-            name="/support",
-            value="サポートサーバーへのリンクを確認することができます。",
-        )
-    )
-    await interaction.response.send_message(embed=embed)
-
-# Discordサーバリンク表示機能
-@bot.command(
-    name="support",
-    description="サポートサーバーのリンクを表示します",
-)
-async def support(interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="サポートサーバー",
-        description="[こちらからサポートサーバーに参加できます。](https://discord.gg/r594PHeNNp)",
-        color=0xFF0000,
-    )
-    await interaction.response.send_message(embed=embed)
-
-# Botを実行
+# サーバを維持するためのkeep_aliveの呼び出し
 keep_alive()
-bot.run(os.getenv("DISCORD_TOKEN"))
+
+# Botを起動（トークンを環境変数から取得）
+client.run(os.getenv("DISCORD_TOKEN"))
