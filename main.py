@@ -9,22 +9,19 @@ from keep_alive import keep_alive
 # Botの初期設定（discord.Clientを使用）
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(intents=intents)
-
+bot = commands.Bot(command_prefix="!", intents=intents)  # command_prefixを追加
 
 # プリセンス(ステータス)表示
 @tasks.loop(seconds=20)
 async def presence_loop():
-    game = discord.Game("/chatをプレイ中")
+    game = discord.Game("/chatをプレイ中")  # ステータス表示内容を指定
     await bot.change_presence(activity=game)
-
 
 # Bot起動時の処理
 @bot.event
 async def on_ready():
     presence_loop.start()
-    print(f"Logged in as {bot.me.name}")
-
+    print(f"Logged in as {bot.user.name}")
 
 # 会話機能
 @app_commands.command(
@@ -38,10 +35,9 @@ async def chat(interaction: discord.Interaction, message: str):
         reply = await asyncio.to_thread(
             generate_reply, message
         )  # Gemini APIからの応答を取得
-        await ctx.send(reply)
+        await interaction.followup.send(reply)
     except Exception as e:
-        await ctx.send(f"エラーが発生しました: {str(e)}")
-
+        await interaction.followup.send(f"エラーが発生しました: {str(e)}")
 
 # 履歴クリア機能
 @bot.command(
@@ -50,7 +46,6 @@ async def chat(interaction: discord.Interaction, message: str):
 )
 async def chat_clear(interaction: discord.Interaction):
     await interaction.response.send_message("会話履歴をクリアしました。")
-
 
 # ヘルプ機能
 @bot.command(
@@ -69,20 +64,18 @@ async def help(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed)
 
-
 # Discordサーバリンク表示機能
 @bot.command(
     name="support",
     description="サポートサーバーのリンクを表示します",
 )
 async def support(interaction: discord.Interaction):
-    embed = interactions.Embed(
+    embed = discord.Embed(
         title="サポートサーバー",
         description="[こちらからサポートサーバーに参加できます。](https://discord.gg/r594PHeNNp)",
         color=0xFF0000,
     )
     await interaction.response.send_message(embed=embed)
-
 
 # Botを実行
 keep_alive()
