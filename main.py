@@ -11,10 +11,13 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# 会話履歴を保存する変数（グローバルに設定）
+conversation_history = []
+
 # プリセンス(ステータス)表示
 @tasks.loop(seconds=20)
 async def presence_loop():
-    game = discord.Game("/chatをプレイ中")
+    game = discord.Game("/chat")
     await bot.change_presence(activity=game)
 
 # Bot起動時の処理
@@ -31,10 +34,18 @@ async def on_ready():
 )
 @app_commands.describe(message="送信したいメッセージ")
 async def chat(interaction: discord.Interaction, message: str):
+    global conversation_history  # グローバル変数として履歴を使用
     await interaction.response.defer()  # 応答を一旦保留にして、タイムアウト回避
     try:
+        # 会話履歴にメッセージを追加
+        conversation_history.append(message)
+        
         # Gemini APIからの応答を非同期で取得
         reply = await asyncio.to_thread(generate_reply, message)  
+        
+        # 応答後に会話履歴をクリア
+        conversation_history.clear()
+
         await interaction.followup.send(reply)  # 返答を送信
     except Exception as e:
         await interaction.followup.send(f"エラーが発生しました: {str(e)}")  # エラーが発生した場合にメッセージ送信
@@ -45,7 +56,9 @@ async def chat(interaction: discord.Interaction, message: str):
     description="会話履歴をクリアします",
 )
 async def chat_clear(interaction: discord.Interaction):
-    await interaction.response.send_message("会話履歴をクリアしました。")
+    global conversation_history  # グローバル変数として履歴を操作
+    conversation_history.clear()  # 会話履歴をクリア
+    await interaction.response.send_message("会話履歴がクリアされました。次の会話が初期状態で開始されます。")
 
 # サポートサーバリンク表示機能 (スラッシュコマンド)
 @bot.tree.command(
