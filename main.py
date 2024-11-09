@@ -16,7 +16,7 @@ async def on_ready():
     print(discord.__version__)  # discord.pyのバージョン
     print('------')
     # ステータスメッセージを「TEST」に設定
-    await client.change_presence(activity=discord.Game(name="TEST"))
+    await client.change_presence(activity=discord.Game(name="/help"))
 
 # チャット機能
 @client.event
