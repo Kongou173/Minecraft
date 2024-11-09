@@ -9,8 +9,13 @@ bot = interactions.Client(token=os.getenv("DISCORD_TOKEN"))
 # Bot起動時の処理
 @bot.event
 async def on_ready():
-    await bot.change_presence(activities=[interactions.PresenceActivity(name="/helpをプレイ中", type=interactions.PresenceActivityType.GAME)])
-    print(f"Logged in as {bot.me.name}")
+    print("Botは正常に起動しました！")
+    print(bot.user.name)  # Botの名前
+    print(bot.user.id)  # ID
+    print(discord.__version__)  # discord.pyのバージョン
+    print('------')
+    await bot.change_presence(activity=discord.Game(name="/chat"))
+
 
 # 会話機能
 @bot.command(
