@@ -47,12 +47,12 @@ async def chat(interaction: discord.Interaction, message: str):
 async def chat_clear(interaction: discord.Interaction):
     await interaction.response.send_message("会話履歴をクリアしました。")
 
-# ヘルプ機能
+# ヘルプ機能（名前をbot_helpに変更）
 @bot.command(
-    name="help",
+    name="bot_help",  # 名前を変更
     description="使い方を表示します",
 )
-async def help(interaction: discord.Interaction):
+async def bot_help(interaction: discord.Interaction):  # 関数名も変更
     embed = (
         discord.Embed(title="ボットの使い方", colour=discord.Colour.blurple())
         .add_field(name="/chat", value="Google Geminiと会話することができます")
